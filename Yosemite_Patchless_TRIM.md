@@ -27,7 +27,7 @@ sudo nvram boot-args
 ```
 sudo plutil -replace 'IOKitPersonalities' -json '{"AppleAHCIDiskDriver":{"IOProviderClass":"IOAHCIDevice","IOClass":"AppleAHCIDiskDriver","CFBundleIdentifier":"com.apple.iokit.IOAHCIBlockStorage","Force Data Set Management":true}}' /System/Library/Extensions/IOAHCIFamily.kext/Contents/PlugIns/IOAHCIBlockStorage.kext/Contents/Info.plist
 ```
-* Lastly, _rebuild the kext cache_ so that the changes take effect:
+* Lastly, _rebuild the kext cache_ so that the modification takes effect:
 ```
 sudo touch /System/Library/Extensions
 sudo kextcache -u /
@@ -38,7 +38,11 @@ sudo kextcache -u /
 
 ## Even Better Method (No kext-dev-mode required!)
 
-* Download the official [AppleDataSetManagement.kext](http://www72.zippyshare.com/v/BQFjtD3i/file.html) (properly codesigned by Apple).
+* Download the official [AppleDataSetManagement.kext](http://www72.zippyshare.com/v/BQFjtD3i/file.html) (properly codesigned by Apple). Use the big, red "Download Now" button on the top right and save it to your Downloads folder.
+* (_Optional_) Verify that your downloaded ZIP file is intact:
+```
+ADSM_SHA1=$(openssl sha1 ~/Downloads/AppleDataSetManagement.zip | cut -d'=' -f2 | cut -d' ' -f2); [ "${ADSM_SHA1}" = "1df56eeef3499e22eb5072dc481bce8a3d2413a7" ] && echo -e "\n* AppleDataSetManagement.zip is valid. It is safe to proceed with the installation now." || echo -e "\n* AppleDataSetManagement.zip is INVALID. Do not install it."
+```
 * Install it to /System/Library/Extensions:
 ```
 sudo unzip ~/Downloads/AppleDataSetManagement.zip -d /System/Library/Extensions
