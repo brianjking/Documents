@@ -6,7 +6,7 @@ Officially, the hidden option is "supposed" to be enabled via their new "trimfor
 
 This made me think a bit, and after some testing I devised a way to enable TRIM on OS X Yosemite 10.10.3 or higher -- without requiring any binary patching! Unfortunately we still break the code signature when we edit Info.plist, so we still need to enable kext-dev-mode until El Capitan comes out. (_Update: This drawback is completely avoided if you use the "Even Better Method" below!_)
 
-The advantages of this new Info.plist method over the classic binary patching is that this is the official Apple method and is guaranteed to work as long as you are on 10.10.3 or higher (lower versions do _not_ work).
+The advantages of this new Info.plist method over the classic binary patching is that this is the clean, official Apple method and is guaranteed to work as long as you are on 10.10.3 or higher (lower versions do _not_ work).
 
 OS X 10.11 El Capitan users should simply use the new "trimforce" command instead (by disabling Rootless, running "sudo trimforce enable", and re-enabling Rootless). _Hopefully Apple improves trimforce before El Cap's release, so that it no longer requires us to temporarily disable rootless. That seems like an oversight on their part._
 
@@ -23,6 +23,10 @@ sudo nvram boot-args="kext-dev-mode=1"
 ```
 sudo nvram boot-args
 ```
+* If you want the ability to disable TRIM later, you should now make a _backup_ before proceeding:
+```
+sudo cp /System/Library/Extensions/IOAHCIFamily.kext/Contents/PlugIns/IOAHCIBlockStorage.kext/Contents/Info.plist /System/Library/Extensions/IOAHCIFamily.kext/Contents/PlugIns/IOAHCIBlockStorage.kext/Contents/Info.plist.bak
+```
 * Next, run the following command in a Terminal window to _inject_ the new option:
 ```
 sudo plutil -replace 'IOKitPersonalities' -json '{"AppleAHCIDiskDriver":{"IOProviderClass":"IOAHCIDevice","IOClass":"AppleAHCIDiskDriver","CFBundleIdentifier":"com.apple.iokit.IOAHCIBlockStorage","Force Data Set Management":true}}' /System/Library/Extensions/IOAHCIFamily.kext/Contents/PlugIns/IOAHCIBlockStorage.kext/Contents/Info.plist
@@ -34,6 +38,12 @@ sudo kextcache -u /
 ```
 * The above command should say "kext-dev-mode allowing invalid signature -67030 0xFFFFFFFFFFFEFA2A for kext IOAHCIBlockStorage.kext".
 * _Restart_ the machine and enjoy your official Apple-blessed TRIM support on Yosemite.
+* If you ever want to _disable_ TRIM again, just run these two commands and reboot the machine:
+```
+sudo mv -f /System/Library/Extensions/IOAHCIFamily.kext/Contents/PlugIns/IOAHCIBlockStorage.kext/Contents/Info.plist.bak /System/Library/Extensions/IOAHCIFamily.kext/Contents/PlugIns/IOAHCIBlockStorage.kext/Contents/Info.plist
+sudo touch /System/Library/Extensions
+```
+* Remember that since we've edited IOAHCIBlockStorage.kext, any system updates that replace the kext will remove TRIM again. That problem, and many others, are _completely avoided_ by using the better method below.
 
 
 ## Even Better Method (No kext-dev-mode required!)
@@ -48,6 +58,11 @@ ADSM_SHA1=$(openssl sha1 ~/Downloads/AppleDataSetManagement.zip | cut -d'=' -f2 
 sudo unzip ~/Downloads/AppleDataSetManagement.zip -d /System/Library/Extensions
 sudo touch /System/Library/Extensions
 ```
-* Restart your machine. This is the official method used by "trimforce", so you don't have to worry about nvram (kext-dev-mode), binary or Info.plist patches, software updates removing TRIM support, booting to a gray stop sign error, and so on. Everything is properly codesigned by Apple and permanently enables TRIM via the official method.
+* Restart your machine. This is the official method used by "trimforce", so you _don't_ have to worry about nvram (kext-dev-mode), binary or Info.plist patches, software updates removing TRIM support, booting to a gray stop sign error, and so on. Everything is properly codesigned by Apple and permanently enables TRIM via the official method.
+* If you ever want to _disable_ TRIM again, just run these two commands and reboot the machine:
+```
+sudo rm -rf /System/Library/Extensions/AppleDataSetManagement.kext
+sudo touch /System/Library/Extensions
+```
 
 **Disclaimer**: Enabling TRIM is done at your own peril and may cause data corruption if you're using an old SSD with a buggy TRIM command. You cannot make any claims against Apple or myself if something bad happens with your SSD. If "trimforce" actually arrives in OS X Yosemite 10.10.4, I will _remove_ all of the instructions on this page (but it's _not_ yet available in the latest 10.10.4 beta, 14E36b from June 15th, 2015, so it looks like Apple has forgotten to backport it). The manual kext installation method above will only be required for as long as Apple hasn't released it officially for Yosemite. And if anyone from Apple's legal department wants me to remove the links or all of these instructions, then open an issue on my Github issue tracker and I will take everything down as soon as I see it. I just want to help bring TRIM to people who have been waiting for it for way too long -- and trying to stop people from installing your official kext on earlier OS X versions is not the right move morally. Oh, and please remember to include trimforce in 10.10.4. ;-)
