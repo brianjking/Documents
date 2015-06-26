@@ -8,7 +8,7 @@ This made me think a bit, and after some testing I devised a way to enable TRIM 
 
 The advantages of this new Info.plist method over the classic binary patching is that this is the clean, official Apple method and is guaranteed to work as long as you are on 10.10.3 or higher (lower versions do _not_ work).
 
-OS X 10.11 El Capitan users should simply use the new "trimforce" command instead (by disabling Rootless, running "sudo trimforce enable", and re-enabling Rootless). _Hopefully Apple improves trimforce before El Cap's release, so that it no longer requires us to temporarily disable rootless. That seems like an oversight on their part._
+OS X 10.11 El Capitan users should simply use the new "trimforce" command instead (by disabling Rootless, running "sudo trimforce enable", and re-enabling Rootless). _Hopefully Apple improves trimforce before El Cap's release, so that it no longer requires us to temporarily disable rootless. That seems like an oversight on their part. Unfortunately it's still not fixed as of Developer Preview 2 from late June 2015._
 
 
 ## Enabling TRIM Support on OS X 10.10.3+ (Manual Method)
